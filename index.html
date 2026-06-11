@@ -904,6 +904,12 @@
             return;
         }
         
+        // Wait for google library to load
+        if (typeof google === 'undefined') {
+            setTimeout(initGoogleAPI, 100);
+            return;
+        }
+        
         // Initialize Google Sign-In
         google.accounts.id.initialize({
             client_id: GOOGLE_CLIENT_ID,
@@ -911,15 +917,7 @@
             auto_select: false
         });
         
-        // Try to get access token
-        google.accounts.oauth2.initCodeClient({
-            client_id: GOOGLE_CLIENT_ID,
-            scope: 'https://www.googleapis.com/auth/tasks',
-            ux_mode: 'popup',
-            callback: handleAuthCode
-        });
-        
-        // Attempt sign-in if previously signed in
+        // Request access token
         requestAccessToken();
     }
 
@@ -928,20 +926,14 @@
         requestAccessToken();
     }
 
-    function handleAuthCode(response) {
-        if (response.code) {
-            // Exchange code for token (requires backend)
-            // For now, use the token directly if available
-            if (response.access_token) {
-                googleAuthToken = response.access_token;
-                fetchGoogleTasks();
-            }
-        }
-    }
-
     function requestAccessToken() {
+        if (typeof google === 'undefined') {
+            setTimeout(requestAccessToken, 100);
+            return;
+        }
+        
         try {
-            google.accounts.oauth2.initCodeClient({
+            const client = google.accounts.oauth2.initCodeClient({
                 client_id: GOOGLE_CLIENT_ID,
                 scope: 'https://www.googleapis.com/auth/tasks',
                 ux_mode: 'popup',
@@ -951,9 +943,12 @@
                         fetchGoogleTasks();
                     }
                 }
-            }).requestCode();
+            });
+            
+            // Attempt to get token
+            client.requestCode();
         } catch (err) {
-            console.log('Attempting user sign-in...');
+            console.log('Sign-in required');
             displayGoogleTodos();
         }
     }
