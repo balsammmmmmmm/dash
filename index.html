@@ -37,7 +37,7 @@
         }
 
         .clock-container {
-            text-align: left;
+            text-align: center;
         }
 
         .clock-time {
@@ -335,30 +335,83 @@
             margin-top: auto;
         }
 
-        .finance-grid {
+.bottom-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
         }
 
-        .finance-card {
-            background: #0f1115;
-            border-radius: 8px;
-            padding: 16px;
+        .bottom-card {
+            background: #171a21;
+            border: 1px solid #262b36;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
         }
 
-        .finance-label {
-            font-size: 11px;
+        .holiday-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #262b36;
+            font-size: 13px;
+        }
+
+        .holiday-item:last-child {
+            border-bottom: none;
+        }
+
+        .holiday-name {
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .holiday-date {
+            color: #8e95a5;
+            font-size: 12px;
+            margin-left: 12px;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid #262b36;
+            font-size: 13px;
+            gap: 10px;
+        }
+
+        .todo-item:last-child {
+            border-bottom: none;
+        }
+
+        .todo-checkbox {
+            width: 16px;
+            height: 16px;
+            min-width: 16px;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: #4f8cff;
+        }
+
+        .todo-text {
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .todo-text.completed {
             color: #5f6779;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            margin-bottom: 8px;
+            text-decoration: line-through;
         }
 
-        .finance-value {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 4px;
+        .todo-placeholder {
+            color: #5f6779;
+            font-size: 12px;
+            text-align: center;
+            padding: 20px;
         }
 
         .offline-indicator {
@@ -377,12 +430,12 @@
 
         @media (max-width: 1024px) {
             body { padding: 16px; }
-            .finance-grid { grid-template-columns: repeat(3, 1fr); }
+            .bottom-grid { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 768px) {
             .main-grid { grid-template-columns: 1fr; gap: 16px; overflow-y: auto; }
-            .finance-grid { grid-template-columns: 1fr; }
+            .bottom-grid { grid-template-columns: 1fr; }
         }
 
         ::-webkit-scrollbar { width: 6px; }
@@ -391,6 +444,7 @@
     </style>
 </head>
 <body>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <div class="dashboard">
     <div class="top-section">
         <div class="clock-container">
@@ -445,8 +499,12 @@
                     <svg class="sparkline" id="sparkline" viewBox="0 0 300 60" preserveAspectRatio="none"></svg>
                 </div>
                 <div class="astana-time">
-                    <span class="astana-label">🇰🇿 Astana, Kazakhstan</span>
+                    <span class="astana-label">Astana, Kazakhstan</span>
                     <span class="astana-clock" id="astanaTime">--:--:--</span>
+                </div>
+                <div class="astana-time">
+                    <span class="astana-label">New York, USA</span>
+                    <span class="astana-clock" id="newyorkTime">--:--:--</span>
                 </div>
             </div>
         </div>
@@ -487,16 +545,17 @@
         </div>
     </div>
 
-    <div class="bottom-section">
-        <div class="card-title" style="margin-bottom:16px;">Finance Overview</div>
-        <div class="finance-grid" id="financeGrid">
-            <div class="finance-card"><div class="finance-label">Checking</div><div class="finance-value" id="checkingBalance">$--</div></div>
-            <div class="finance-card"><div class="finance-label">Savings</div><div class="finance-value" id="savingsBalance">$--</div></div>
-            <div class="finance-card"><div class="finance-label">Credit Cards</div><div class="finance-value" id="creditCards">$--</div></div>
-            <div class="finance-card"><div class="finance-label">Cash Available</div><div class="finance-value" id="cashAvailable">$--</div></div>
-            <div class="finance-card"><div class="finance-label">Net Worth</div><div class="finance-value" id="netWorth">$--</div></div>
-            <div class="finance-card"><div class="finance-label">Monthly Spending</div><div class="finance-value" id="monthlySpending">$--</div></div>
-            <div class="finance-card"><div class="finance-label">Monthly Income</div><div class="finance-value" id="monthlyIncome">$--</div></div>
+    <div class="bottom-grid">
+        <!-- LEFT: USA Holidays -->
+        <div class="bottom-card">
+            <div class="card-title">Upcoming US Holidays</div>
+            <div id="holidaysList"></div>
+        </div>
+        
+        <!-- RIGHT: Google Todo Tasks -->
+        <div class="bottom-card">
+            <div class="card-title">Google Todo Tasks</div>
+            <div id="todosList"></div>
         </div>
     </div>
 </div>
@@ -518,18 +577,22 @@
         { name: 'up', url: 'https://up.aunas.qzz.io/', displayName: 'Uptime Monitor' }
     ];
 
-    const FINANCE_API_URL = 'http://192.168.0.10:30404/api/v1/accounts';
-    const FINANCE_API_KEY = '6ea6004a268725d9f010e7b5f174cf2b8acde7091cfbb8539d4bad136d5784c4';
+    // ========== GOOGLE TASKS API CONFIGURATION ==========
+    // Get your Google API Client ID from: https://console.cloud.google.com
+    const GOOGLE_CLIENT_ID = '465596786526-lf1com6r3jv49ub7ugu6snusmc32l225.apps.googleusercontent.com';
+    const GOOGLE_API_KEY = 'YOUR_GOOGLE_API_KEY_HERE';
+    let googleAuthToken = null;
+    let googleTasks = [];
 
-    let cache = { weather: null, exchange: null, exchangeHistory: [], services: {}, finance: null };
-    let lastFetch = { weather: 0, exchange: 0, services: 0, finance: 0 };
+    let cache = { weather: null, exchange: null, exchangeHistory: [], services: {} };
+    let lastFetch = { weather: 0, exchange: 0, services: 0 };
     let lastRate = null;
     
     const CACHE_DURATION = {
-        weather: 10 * 60 * 1000,
-        exchange: 60 * 1000,
-        services: 60 * 1000,
-        finance: 5 * 60 * 1000
+        weather: 12 * 60 * 60 * 1000,
+        exchange: 12 * 60 * 60 * 1000,
+        aqi: 12 * 60 * 60 * 1000,
+        services: 60 * 1000
     };
     let isOnline = navigator.onLine;
 
@@ -548,11 +611,21 @@
     function updateAstanaTime() {
         const now = new Date();
         const astanaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Almaty' }));
-        const timeStr = astanaTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const timeStr = astanaTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         document.getElementById('astanaTime').textContent = timeStr;
     }
     updateAstanaTime();
     setInterval(updateAstanaTime, 1000);
+
+    // ========== NEW YORK TIME (UTC-4/-5) ==========
+    function updateNewYorkTime() {
+        const now = new Date();
+        const newyorkTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+        const timeStr = newyorkTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('newyorkTime').textContent = timeStr;
+    }
+    updateNewYorkTime();
+    setInterval(updateNewYorkTime, 1000);
 
     // ========== WEATHER ==========
     async function fetchWeather() {
@@ -761,67 +834,246 @@
         for(const svc of SERVICES) await checkService(svc);
     }
 
-    // ========== FINANCE MODULE ==========
-    async function fetchFinanceData() {
-        const now = Date.now();
-        if (cache.finance && (now - lastFetch.finance) < CACHE_DURATION.finance) {
-            renderFinance(cache.finance);
+    // ========== USA HOLIDAYS ==========
+    const US_HOLIDAYS_2024_2026 = [
+        { name: 'New Year\'s Day', date: '2024-01-01' },
+        { name: 'MLK Jr. Day', date: '2024-01-15' },
+        { name: 'Presidents\' Day', date: '2024-02-19' },
+        { name: 'Memorial Day', date: '2024-05-27' },
+        { name: 'Juneteenth', date: '2024-06-19' },
+        { name: 'Independence Day', date: '2024-07-04' },
+        { name: 'Labor Day', date: '2024-09-02' },
+        { name: 'Columbus Day', date: '2024-10-14' },
+        { name: 'Veterans Day', date: '2024-11-11' },
+        { name: 'Thanksgiving', date: '2024-11-28' },
+        { name: 'Christmas Day', date: '2024-12-25' },
+        { name: 'New Year\'s Day', date: '2025-01-01' },
+        { name: 'MLK Jr. Day', date: '2025-01-20' },
+        { name: 'Presidents\' Day', date: '2025-02-17' },
+        { name: 'Memorial Day', date: '2025-05-26' },
+        { name: 'Juneteenth', date: '2025-06-19' },
+        { name: 'Independence Day', date: '2025-07-04' },
+        { name: 'Labor Day', date: '2025-09-01' },
+        { name: 'Columbus Day', date: '2025-10-13' },
+        { name: 'Veterans Day', date: '2025-11-11' },
+        { name: 'Thanksgiving', date: '2025-11-27' },
+        { name: 'Christmas Day', date: '2025-12-25' },
+        { name: 'New Year\'s Day', date: '2026-01-01' },
+        { name: 'MLK Jr. Day', date: '2026-01-19' },
+        { name: 'Presidents\' Day', date: '2026-02-16' },
+        { name: 'Memorial Day', date: '2026-05-25' },
+        { name: 'Juneteenth', date: '2026-06-19' },
+        { name: 'Independence Day', date: '2026-07-04' },
+        { name: 'Labor Day', date: '2026-09-07' },
+        { name: 'Columbus Day', date: '2026-10-12' },
+        { name: 'Veterans Day', date: '2026-11-11' },
+        { name: 'Thanksgiving', date: '2026-11-26' },
+        { name: 'Christmas Day', date: '2026-12-25' }
+    ];
+
+    function displayUpcomingHolidays() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const upcoming = US_HOLIDAYS_2024_2026
+            .filter(h => new Date(h.date) >= today)
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .slice(0, 8);
+        
+        const holidaysList = document.getElementById('holidaysList');
+        if (upcoming.length === 0) {
+            holidaysList.innerHTML = '<div class="todo-placeholder">No upcoming holidays</div>';
             return;
         }
-        try {
-            const response = await fetch(FINANCE_API_URL, { headers: { 'X-Api-Key': FINANCE_API_KEY } });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const rawData = await response.json();
-            console.log('Finance API response:', rawData);
-            
-            let mapped = { checking:0, savings:0, creditCards:0, cashAvailable:0, netWorth:0, monthlySpending:0, monthlyIncome:0 };
-            if (Array.isArray(rawData)) {
-                for (const acc of rawData) {
-                    const type = (acc.type || acc.account_type || '').toLowerCase();
-                    const balance = parseFloat(acc.balance || acc.current_balance || 0);
-                    if (type.includes('checking')) mapped.checking += balance;
-                    else if (type.includes('savings')) mapped.savings += balance;
-                    else if (type.includes('credit')) mapped.creditCards += Math.abs(balance);
-                    else if (type.includes('cash')) mapped.cashAvailable += balance;
-                }
-                mapped.netWorth = (mapped.checking + mapped.savings + mapped.cashAvailable) - mapped.creditCards;
-            } else if (typeof rawData === 'object') {
-                mapped.checking = rawData.checking || rawData.checking_balance || 0;
-                mapped.savings = rawData.savings || rawData.savings_balance || 0;
-                mapped.creditCards = rawData.credit_cards || rawData.creditCards || 0;
-                mapped.cashAvailable = rawData.cash_available || rawData.cash || 0;
-                mapped.netWorth = rawData.net_worth || rawData.netWorth || 0;
-                mapped.monthlySpending = rawData.monthly_spending || rawData.spending || 0;
-                mapped.monthlyIncome = rawData.monthly_income || rawData.income || 0;
+        
+        holidaysList.innerHTML = upcoming.map(h => {
+            const date = new Date(h.date);
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return `<div class="holiday-item">
+                <span class="holiday-name">${h.name}</span>
+                <span class="holiday-date">${dayName}, ${dateStr}</span>
+            </div>`;
+        }).join('');
+    }
+
+    // ========== GOOGLE TODOS MODULE ==========
+    function initGoogleAPI() {
+        if (GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID_HERE') {
+            displayGoogleTodos();
+            return;
+        }
+        
+        // Initialize Google Sign-In
+        google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleCallback,
+            auto_select: false
+        });
+        
+        // Try to get access token
+        google.accounts.oauth2.initCodeClient({
+            client_id: GOOGLE_CLIENT_ID,
+            scope: 'https://www.googleapis.com/auth/tasks',
+            ux_mode: 'popup',
+            callback: handleAuthCode
+        });
+        
+        // Attempt sign-in if previously signed in
+        requestAccessToken();
+    }
+
+    function handleGoogleCallback(response) {
+        console.log('ID token received');
+        requestAccessToken();
+    }
+
+    function handleAuthCode(response) {
+        if (response.code) {
+            // Exchange code for token (requires backend)
+            // For now, use the token directly if available
+            if (response.access_token) {
+                googleAuthToken = response.access_token;
+                fetchGoogleTasks();
             }
-            cache.finance = mapped;
-            lastFetch.finance = now;
-            renderFinance(mapped);
-        } catch (error) {
-            console.error('Finance fetch error:', error);
-            if (!cache.finance) renderFinanceDemo();
-            else renderFinance(cache.finance);
         }
     }
-    function renderFinanceDemo() {
-        const demo = { checking:5240.50, savings:15780.25, creditCards:2340.75, cashAvailable:3240.00, netWorth:18680.00, monthlySpending:3450.00, monthlyIncome:5200.00 };
-        renderFinance(demo);
-        const note = document.createElement('div');
-        note.style.gridColumn='1/-1'; note.style.textAlign='center'; note.style.fontSize='11px'; note.style.color='#5f6779'; note.style.padding='8px';
-        note.textContent = '⚠️ Using demo data — finance API unreachable. Check CORS or network.';
-        const grid = document.getElementById('financeGrid');
-        if(!grid.querySelector('.config-note')) { note.className='config-note'; grid.appendChild(note); }
+
+    function requestAccessToken() {
+        try {
+            google.accounts.oauth2.initCodeClient({
+                client_id: GOOGLE_CLIENT_ID,
+                scope: 'https://www.googleapis.com/auth/tasks',
+                ux_mode: 'popup',
+                callback: (response) => {
+                    if (response.access_token) {
+                        googleAuthToken = response.access_token;
+                        fetchGoogleTasks();
+                    }
+                }
+            }).requestCode();
+        } catch (err) {
+            console.log('Attempting user sign-in...');
+            displayGoogleTodos();
+        }
     }
-    function renderFinance(data) {
-        const fmt = (n) => `$${Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-        document.getElementById('checkingBalance').textContent = fmt(data.checking);
-        document.getElementById('savingsBalance').textContent = fmt(data.savings);
-        document.getElementById('creditCards').textContent = fmt(Math.abs(data.creditCards));
-        document.getElementById('cashAvailable').textContent = fmt(data.cashAvailable);
-        document.getElementById('netWorth').textContent = fmt(data.netWorth);
-        document.getElementById('monthlySpending').textContent = fmt(data.monthlySpending);
-        document.getElementById('monthlyIncome').textContent = fmt(data.monthlyIncome);
-        if(data.creditCards < 0) document.getElementById('creditCards').style.color = '#f44336';
+
+    async function fetchGoogleTasks() {
+        if (!googleAuthToken) {
+            displayGoogleTodos();
+            return;
+        }
+        
+        try {
+            const headers = {
+                'Authorization': `Bearer ${googleAuthToken}`,
+                'Content-Type': 'application/json'
+            };
+            
+            // Fetch task lists
+            const tasklistsResponse = await fetch('https://www.googleapis.com/tasks/v1/users/@me/lists', { headers });
+            if (!tasklistsResponse.ok) throw new Error('Failed to fetch task lists');
+            
+            const tasklistsData = await tasklistsResponse.json();
+            const tasklists = tasklistsData.items || [];
+            
+            googleTasks = [];
+            for (const list of tasklists) {
+                const tasksResponse = await fetch(`https://www.googleapis.com/tasks/v1/lists/${list.id}/tasks`, { headers });
+                if (!tasksResponse.ok) continue;
+                
+                const tasksData = await tasksResponse.json();
+                const tasks = tasksData.items || [];
+                googleTasks.push(...tasks.map(t => ({ ...t, listId: list.id, listTitle: list.title })));
+            }
+            
+            displayGoogleTodos();
+        } catch (err) {
+            console.error('Fetch tasks error:', err);
+            displayGoogleTodos();
+        }
+    }
+
+    function displayGoogleTodos() {
+        const todosList = document.getElementById('todosList');
+        
+        if (!googleAuthToken) {
+            todosList.innerHTML = `<div class="todo-placeholder">
+                <strong>Google Tasks</strong><br><br>
+                <button id="googleSignInBtn" style="background:#4f8cff;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;margin-top:10px;">Sign In with Google</button>
+                <p style="font-size:11px;margin-top:12px;color:#5f6779;">Click to authorize access to your Google Tasks</p>
+            </div>`;
+            
+            const btn = document.getElementById('googleSignInBtn');
+            if (btn) {
+                btn.onclick = requestAccessToken;
+            }
+            return;
+        }
+        
+        if (googleTasks.length === 0) {
+            todosList.innerHTML = '<div class="todo-placeholder">No tasks found</div>';
+            return;
+        }
+        
+        const incompleteTasks = googleTasks
+            .filter(t => t.status !== 'completed')
+            .sort((a, b) => (a.due || '').localeCompare(b.due || ''))
+            .slice(0, 10);
+        
+        if (incompleteTasks.length === 0) {
+            todosList.innerHTML = '<div class="todo-placeholder">All tasks completed! 🎉</div>';
+            return;
+        }
+        
+        todosList.innerHTML = incompleteTasks.map(task => `
+            <div class="todo-item">
+                <input type="checkbox" class="todo-checkbox" data-task-id="${task.id}" data-list-id="${task.listId}" onchange="toggleGoogleTask(this)">
+                <div class="todo-text">${escapeHtml(task.title)}</div>
+            </div>
+        `).join('');
+    }
+
+    async function toggleGoogleTask(checkbox) {
+        if (!googleAuthToken) return;
+        
+        const taskId = checkbox.dataset.taskId;
+        const listId = checkbox.dataset.listId;
+        const task = googleTasks.find(t => t.id === taskId);
+        
+        if (!task) return;
+        
+        try {
+            const newStatus = task.status === 'completed' ? 'needsAction' : 'completed';
+            const headers = {
+                'Authorization': `Bearer ${googleAuthToken}`,
+                'Content-Type': 'application/json'
+            };
+            
+            const response = await fetch(`https://www.googleapis.com/tasks/v1/lists/${listId}/tasks/${taskId}`, {
+                method: 'PATCH',
+                headers,
+                body: JSON.stringify({ status: newStatus })
+            });
+            
+            if (!response.ok) throw new Error('Failed to update task');
+            
+            task.status = newStatus;
+            displayGoogleTodos();
+        } catch (err) {
+            console.error('Update task error:', err);
+        }
+    }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
     }
 
     // ========== OFFLINE & AUTO-REFRESH ==========
@@ -834,14 +1086,19 @@
     window.addEventListener('offline', updateOnlineStatus);
 
     async function refreshAllData() {
-        await Promise.all([fetchWeather(), fetchAQI(), fetchExchangeRate(), checkAllServices(), fetchFinanceData()]);
+        await Promise.all([fetchWeather(), fetchAQI(), fetchExchangeRate(), checkAllServices()]);
+        displayUpcomingHolidays();
+        displayGoogleTodos();
     }
+    
+    // Initialize on page load
+    initGoogleAPI();
     refreshAllData();
     setInterval(fetchWeather, CACHE_DURATION.weather);
     setInterval(fetchAQI, CACHE_DURATION.weather);
     setInterval(fetchExchangeRate, CACHE_DURATION.exchange);
     setInterval(checkAllServices, CACHE_DURATION.services);
-    setInterval(fetchFinanceData, CACHE_DURATION.finance);
+    setInterval(displayUpcomingHolidays, 60 * 60 * 1000); // Update holidays every hour
     updateOnlineStatus();
 </script>
 </body>
