@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Personal Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0f1115;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #e8eaed;
+            padding: 24px;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .dashboard {
+            max-width: 1440px;
+            margin: 0 auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .top-section {
+            background: #0f1115;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #262b36;
+        }
+
+        .clock-container {
+            text-align: left;
+        }
+
+        .clock-time {
+            font-size: 72px;
+            font-weight: 600;
+            letter-spacing: -1px;
+            line-height: 1.1;
+            margin-bottom: 8px;
+        }
+
+        .clock-date {
+            font-size: 18px;
+            font-weight: 400;
+            color: #8e95a5;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            gap: 24px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .card {
+            background: #171a21;
+            border: 1px solid #262b36;
+            border-radius: 12px;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #5f6779;
+            margin-bottom: 20px;
+        }
+
+        .weather-location {
+            font-size: 14px;
+            font-weight: 500;
+            color: #8e95a5;
+            margin-bottom: 16px;
+        }
+
+        .weather-main {
+            margin-bottom: 24px;
+        }
+
+        .weather-temp {
+            font-size: 48px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .weather-condition {
+            font-size: 15px;
+            color: #8e95a5;
+            margin-bottom: 16px;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #262b36;
+        }
+
+        .weather-detail {
+            font-size: 13px;
+        }
+
+        .weather-detail-label {
+            color: #5f6779;
+            margin-bottom: 4px;
+        }
+
+        .weather-detail-value {
+            font-weight: 500;
+        }
+
+        .forecast {
+            margin-bottom: 0;
+        }
+
+        .forecast-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #262b36;
+            font-size: 13px;
+        }
+
+        .forecast-day {
+            font-weight: 500;
+            width: 80px;
+        }
+
+        .forecast-temp {
+            font-weight: 500;
+        }
+
+        .forecast-precip {
+            color: #8e95a5;
+            font-size: 11px;
+        }
+
+        .rate-main {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #262b36;
+        }
+
+        .rate-value {
+            font-size: 48px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .rate-change {
+            font-size: 14px;
+        }
+
+        .rate-change.positive {
+            color: #4caf50;
+        }
+
+        .rate-change.negative {
+            color: #f44336;
+        }
+
+        .trend-stats {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #262b36;
+        }
+
+        .trend-stat {
+            flex: 1;
+        }
+
+        .trend-label {
+            font-size: 11px;
+            color: #5f6779;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .trend-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chart-container {
+            margin-top: auto;
+        }
+
+        .sparkline {
+            width: 100%;
+            height: 60px;
+        }
+
+        .astana-time {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #262b36;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .astana-label {
+            color: #5f6779;
+            font-weight: 500;
+        }
+
+        .astana-clock {
+            font-size: 20px;
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .service-item {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #262b36;
+        }
+
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .service-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-badge.online {
+            background: #4caf50;
+        }
+
+        .status-badge.offline {
+            background: #f44336;
+        }
+
+        .service-status {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .service-details {
+            font-size: 12px;
+            color: #5f6779;
+        }
+
+        .response-time {
+            margin-bottom: 4px;
+        }
+
+        .last-checked {
+            font-size: 11px;
+        }
+
+        .aqi-container {
+            background: #0f1115;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .aqi-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 12px;
+        }
+
+        .aqi-category {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .aqi-value {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .aqi-bar {
+            height: 4px;
+            background: #262b36;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .aqi-bar-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .aqi-detail {
+            font-size: 11px;
+            color: #5f6779;
+            margin-top: 8px;
+        }
+
+        .bottom-section {
+            background: #171a21;
+            border: 1px solid #262b36;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: auto;
+        }
+
+        .finance-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+        }
+
+        .finance-card {
+            background: #0f1115;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .finance-label {
+            font-size: 11px;
+            color: #5f6779;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 8px;
+        }
+
+        .finance-value {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .offline-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #f44336;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            display: none;
+            z-index: 1000;
+        }
+
+        @media (max-width: 1024px) {
+            body { padding: 16px; }
+            .finance-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; gap: 16px; overflow-y: auto; }
+            .finance-grid { grid-template-columns: 1fr; }
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f1115; }
+        ::-webkit-scrollbar-thumb { background: #262b36; border-radius: 3px; }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div class="top-section">
+        <div class="clock-container">
+            <div class="clock-time" id="clockTime">--:--</div>
+            <div class="clock-date" id="clockDate">------, -- ----- ----</div>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- LEFT: Weather -->
+        <div class="card">
+            <div class="card-title">Weather</div>
+            <div>
+                <div class="weather-location" id="weatherLocation">Santa Rosa Beach, FL</div>
+                <div class="weather-main">
+                    <div class="weather-temp" id="weatherTemp">--°C</div>
+                    <div class="weather-condition" id="weatherCondition">Loading...</div>
+                </div>
+                <div class="weather-details">
+                    <div class="weather-detail">
+                        <div class="weather-detail-label">Humidity</div>
+                        <div class="weather-detail-value" id="weatherHumidity">--%</div>
+                    </div>
+                    <div class="weather-detail">
+                        <div class="weather-detail-label">Wind</div>
+                        <div class="weather-detail-value" id="weatherWind">-- km/h</div>
+                    </div>
+                </div>
+                <div class="forecast" id="weatherForecast"></div>
+            </div>
+        </div>
+
+        <!-- CENTER: Exchange Rate -->
+        <div class="card">
+            <div class="card-title">Exchange Rate</div>
+            <div>
+                <div class="rate-main">
+                    <div class="rate-value" id="exchangeRate">$1 = ₸ --.--</div>
+                    <div class="rate-change" id="exchangeChange">--.--%</div>
+                </div>
+                <div class="trend-stats">
+                    <div class="trend-stat">
+                        <div class="trend-label">7 Day Trend</div>
+                        <div class="trend-value" id="trend7d">--%</div>
+                    </div>
+                    <div class="trend-stat">
+                        <div class="trend-label">30 Day Trend</div>
+                        <div class="trend-value" id="trend30d">--%</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <svg class="sparkline" id="sparkline" viewBox="0 0 300 60" preserveAspectRatio="none"></svg>
+                </div>
+                <div class="astana-time">
+                    <span class="astana-label">🇰🇿 Astana, Kazakhstan</span>
+                    <span class="astana-clock" id="astanaTime">--:--:--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Services Monitor + AQI at bottom -->
+        <div class="card">
+            <div class="card-title">Services & Air Quality</div>
+            <div>
+                <div class="service-item" data-service="dash">
+                    <div class="service-header">
+                        <span class="service-name">Dashboard API</span>
+                        <span class="service-status" id="dashStatus">Checking...</span>
+                    </div>
+                    <div class="service-details">
+                        <div class="response-time" id="dashResponse">-- ms</div>
+                        <div class="last-checked" id="dashLastChecked">--:--:--</div>
+                    </div>
+                </div>
+                <div class="service-item" data-service="up">
+                    <div class="service-header">
+                        <span class="service-name">Uptime Monitor</span>
+                        <span class="service-status" id="upStatus">Checking...</span>
+                    </div>
+                    <div class="service-details">
+                        <div class="response-time" id="upResponse">-- ms</div>
+                        <div class="last-checked" id="upLastChecked">--:--:--</div>
+                    </div>
+                </div>
+                <div class="aqi-container" id="aqiContainer">
+                    <div class="aqi-row">
+                        <span class="aqi-category" id="aqiCategory">Air Quality</span>
+                        <span class="aqi-value" id="aqiValue">--</span>
+                    </div>
+                    <div class="aqi-bar"><div class="aqi-bar-fill" id="aqiBar" style="width:0%"></div></div>
+                    <div class="aqi-detail" id="aqiDetail">Loading AQI...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-section">
+        <div class="card-title" style="margin-bottom:16px;">Finance Overview</div>
+        <div class="finance-grid" id="financeGrid">
+            <div class="finance-card"><div class="finance-label">Checking</div><div class="finance-value" id="checkingBalance">$--</div></div>
+            <div class="finance-card"><div class="finance-label">Savings</div><div class="finance-value" id="savingsBalance">$--</div></div>
+            <div class="finance-card"><div class="finance-label">Credit Cards</div><div class="finance-value" id="creditCards">$--</div></div>
+            <div class="finance-card"><div class="finance-label">Cash Available</div><div class="finance-value" id="cashAvailable">$--</div></div>
+            <div class="finance-card"><div class="finance-label">Net Worth</div><div class="finance-value" id="netWorth">$--</div></div>
+            <div class="finance-card"><div class="finance-label">Monthly Spending</div><div class="finance-value" id="monthlySpending">$--</div></div>
+            <div class="finance-card"><div class="finance-label">Monthly Income</div><div class="finance-value" id="monthlyIncome">$--</div></div>
+        </div>
+    </div>
+</div>
+<div class="offline-indicator" id="offlineIndicator">📡 Offline Mode</div>
+
+<script>
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+    const WEATHER_LAT = 30.373871;
+    const WEATHER_LON = -86.229050;
+    const WEATHER_LOCATION_NAME = "Santa Rosa Beach, FL";
+    
+    const EXCHANGE_API_URL = 'https://api.frankfurter.dev/v2/rate/USD/KZT';
+    const EXCHANGE_HISTORICAL_URL = 'https://api.frankfurter.dev/v2/rates?base=USD&quotes=kzt';
+    
+    const SERVICES = [
+        { name: 'dash', url: 'https://dash.aunas.qzz.io/', displayName: 'Dashboard API' },
+        { name: 'up', url: 'https://up.aunas.qzz.io/', displayName: 'Uptime Monitor' }
+    ];
+
+    const FINANCE_API_URL = 'http://192.168.0.10:30404/api/v1/accounts';
+    const FINANCE_API_KEY = '6ea6004a268725d9f010e7b5f174cf2b8acde7091cfbb8539d4bad136d5784c4';
+
+    let cache = { weather: null, exchange: null, exchangeHistory: [], services: {}, finance: null };
+    let lastFetch = { weather: 0, exchange: 0, services: 0, finance: 0 };
+    let lastRate = null;
+    
+    const CACHE_DURATION = {
+        weather: 10 * 60 * 1000,
+        exchange: 60 * 1000,
+        services: 60 * 1000,
+        finance: 5 * 60 * 1000
+    };
+    let isOnline = navigator.onLine;
+
+    // ========== CLOCK (no seconds) ==========
+    function updateClock() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('clockTime').textContent = timeStr;
+        document.getElementById('clockDate').textContent = dateStr;
+    }
+    setInterval(updateClock, 60000);
+    updateClock();
+
+    // ========== ASTANA TIME (UTC+5) ==========
+    function updateAstanaTime() {
+        const now = new Date();
+        const astanaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Almaty' }));
+        const timeStr = astanaTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        document.getElementById('astanaTime').textContent = timeStr;
+    }
+    updateAstanaTime();
+    setInterval(updateAstanaTime, 1000);
+
+    // ========== WEATHER ==========
+    async function fetchWeather() {
+        const now = Date.now();
+        if (cache.weather && (now - lastFetch.weather) < CACHE_DURATION.weather) { renderWeather(cache.weather); return; }
+        try {
+            const resp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_LAT}&longitude=${WEATHER_LON}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto`);
+            if (!resp.ok) throw new Error();
+            const data = await resp.json();
+            const weatherCodes = { 0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Foggy',51:'Light drizzle',53:'Moderate drizzle',55:'Dense drizzle',56:'Freezing drizzle',57:'Freezing drizzle',61:'Light rain',63:'Moderate rain',65:'Heavy rain',71:'Light snow',73:'Moderate snow',75:'Heavy snow',77:'Snow grains',80:'Light showers',81:'Moderate showers',82:'Violent showers',85:'Light snow showers',86:'Heavy snow showers',95:'Thunderstorm',96:'Thunderstorm',99:'Thunderstorm' };
+            const weatherData = {
+                temp: Math.round(data.current.temperature_2m),
+                condition: weatherCodes[data.current.weather_code] || 'Unknown',
+                humidity: data.current.relative_humidity_2m,
+                wind: Math.round(data.current.wind_speed_10m),
+                forecast: data.daily.time.slice(0,5).map((day,i) => ({
+                    day: new Date(day).toLocaleDateString('en-US',{weekday:'short'}),
+                    high: Math.round(data.daily.temperature_2m_max[i]),
+                    low: Math.round(data.daily.temperature_2m_min[i]),
+                    precip: data.daily.precipitation_probability_max[i]
+                }))
+            };
+            cache.weather = weatherData;
+            lastFetch.weather = now;
+            renderWeather(weatherData);
+        } catch(e) { console.error(e); if(!cache.weather) document.getElementById('weatherCondition').textContent = 'Offline'; }
+    }
+    
+    function renderWeather(data) {
+        document.getElementById('weatherLocation').textContent = WEATHER_LOCATION_NAME;
+        document.getElementById('weatherTemp').textContent = `${data.temp}°C`;
+        document.getElementById('weatherCondition').textContent = data.condition;
+        document.getElementById('weatherHumidity').textContent = `${data.humidity}%`;
+        document.getElementById('weatherWind').textContent = `${data.wind} km/h`;
+        document.getElementById('weatherForecast').innerHTML = data.forecast.map(day => `
+            <div class="forecast-item">
+                <span class="forecast-day">${day.day}</span>
+                <span class="forecast-temp">${day.high}° / ${day.low}°</span>
+                <span class="forecast-precip">💧${day.precip}%</span>
+            </div>
+        `).join('');
+    }
+
+    // ========== AQI (now independent, called separately) ==========
+    async function fetchAQI() {
+        try {
+            const resp = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${WEATHER_LAT}&longitude=${WEATHER_LON}&current=us_aqi&timezone=auto`);
+            if (!resp.ok) throw new Error();
+            const data = await resp.json();
+            const aqi = data.current.us_aqi;
+            
+            let category = 'Good';
+            let barColor = '#4caf50';
+            let detailText = 'Air quality is satisfactory, pollution poses little or no risk.';
+            
+            if (aqi <= 50) {
+                category = 'Good';
+                barColor = '#4caf50';
+                detailText = 'Air quality is satisfactory, pollution poses little or no risk.';
+            } else if (aqi <= 100) {
+                category = 'Moderate';
+                barColor = '#ffc107';
+                detailText = 'Acceptable quality, but some pollutants may be a concern for very sensitive people.';
+            } else if (aqi <= 150) {
+                category = 'Unhealthy for Sensitive';
+                barColor = '#ff9800';
+                detailText = 'Members of sensitive groups may experience health effects.';
+            } else if (aqi <= 200) {
+                category = 'Unhealthy';
+                barColor = '#f44336';
+                detailText = 'Everyone may begin to experience health effects.';
+            } else if (aqi <= 300) {
+                category = 'Very Unhealthy';
+                barColor = '#9c27b0';
+                detailText = 'Health alert: everyone may experience more serious health effects.';
+            } else {
+                category = 'Hazardous';
+                barColor = '#7a2e2e';
+                detailText = 'Health warnings of emergency conditions.';
+            }
+            
+            const percent = Math.min(100, (aqi / 300) * 100);
+            
+            document.getElementById('aqiCategory').textContent = category;
+            document.getElementById('aqiValue').textContent = aqi;
+            document.getElementById('aqiDetail').textContent = detailText;
+            const barFill = document.getElementById('aqiBar');
+            barFill.style.width = percent + '%';
+            barFill.style.backgroundColor = barColor;
+            document.getElementById('aqiCategory').style.color = barColor;
+        } catch(e) { console.error('AQI error:', e); }
+    }
+
+    // ========== EXCHANGE RATE ==========
+    async function fetchExchangeRate() {
+        const now = Date.now();
+        if (cache.exchange && (now - lastFetch.exchange) < CACHE_DURATION.exchange) {
+            renderExchange(cache.exchange.rate, cache.exchange.prev);
+            return;
+        }
+        try {
+            const res = await fetch(EXCHANGE_API_URL);
+            const json = await res.json();
+            const rate = json.rate;
+            if (!rate) throw new Error('No rate');
+            
+            cache.exchange = { rate, prev: lastRate };
+            lastFetch.exchange = now;
+            lastRate = rate;
+            
+            renderExchange(rate, lastRate);
+            await fetchHistoricalRates();
+        } catch (e) {
+            console.error(e);
+            if (!cache.exchange) document.getElementById('exchangeRate').textContent = '$1 = ₸ Error';
+        }
+    }
+    
+    async function fetchHistoricalRates() {
+        try {
+            const now = new Date();
+            const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            const fromDate = thirtyDaysAgo.toISOString().split('T')[0];
+            const url = `${EXCHANGE_HISTORICAL_URL}&from=${fromDate}`;
+            const response = await fetch(url);
+            const ratesArray = await response.json();
+            
+            if (ratesArray && ratesArray.length > 0) {
+                const rates = ratesArray.map(item => item.rate);
+                cache.exchangeHistory = rates;
+                drawSparkline(rates);
+                
+                const sevenDayRates = rates.slice(-7);
+                if (sevenDayRates.length >= 2) {
+                    const change7d = ((sevenDayRates[sevenDayRates.length-1] - sevenDayRates[0]) / sevenDayRates[0]) * 100;
+                    document.getElementById('trend7d').textContent = `${change7d > 0 ? '+' : ''}${change7d.toFixed(2)}%`;
+                    document.getElementById('trend7d').style.color = change7d >= 0 ? '#4caf50' : '#f44336';
+                }
+                if (rates.length >= 2) {
+                    const change30d = ((rates[rates.length-1] - rates[0]) / rates[0]) * 100;
+                    document.getElementById('trend30d').textContent = `${change30d > 0 ? '+' : ''}${change30d.toFixed(2)}%`;
+                    document.getElementById('trend30d').style.color = change30d >= 0 ? '#4caf50' : '#f44336';
+                }
+            }
+        } catch (error) {
+            console.error('Historical rates error:', error);
+        }
+    }
+    
+    function renderExchange(rate, prevRate) {
+        document.getElementById('exchangeRate').textContent = `$1 = ₸ ${rate.toFixed(2)}`;
+        if (prevRate) {
+            const change = ((rate - prevRate) / prevRate) * 100;
+            const el = document.getElementById('exchangeChange');
+            el.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
+            el.className = `rate-change ${change >= 0 ? 'positive' : 'negative'}`;
+        } else {
+            document.getElementById('exchangeChange').textContent = '--%';
+        }
+    }
+    
+    function drawSparkline(data) {
+        if (!data || data.length === 0) return;
+        const svg = document.getElementById('sparkline');
+        const w = 300, h = 60;
+        const min = Math.min(...data);
+        const max = Math.max(...data);
+        const range = max - min;
+        let path = '';
+        data.forEach((v, i) => {
+            const x = (i / (data.length - 1)) * w;
+            const y = range === 0 ? h/2 : h - ((v - min) / range) * h;
+            path += (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
+        });
+        svg.innerHTML = `<path d="${path}" fill="none" stroke="#4f8cff" stroke-width="1.5" />`;
+    }
+
+    // ========== SERVICES MONITOR ==========
+    async function checkService(service) {
+        const start = performance.now();
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(()=>controller.abort(),5000);
+            await fetch(service.url, { method:'HEAD', mode:'no-cors', signal:controller.signal });
+            clearTimeout(timeoutId);
+            const responseTime = Math.round(performance.now()-start);
+            cache.services[service.name] = { status:'online', responseTime, lastChecked:Date.now() };
+        } catch(e) {
+            cache.services[service.name] = { status:'offline', responseTime:null, lastChecked:Date.now() };
+        }
+        renderService(service);
+    }
+    function renderService(service) {
+        const d = cache.services[service.name];
+        if(!d) return;
+        const statusEl = document.getElementById(`${service.name}Status`);
+        const respEl = document.getElementById(`${service.name}Response`);
+        const lastEl = document.getElementById(`${service.name}LastChecked`);
+        const isOnline = d.status === 'online';
+        statusEl.innerHTML = `<span class="status-badge ${isOnline?'online':'offline'}"></span>${isOnline?'Online':'Offline'}`;
+        statusEl.style.color = isOnline?'#4caf50':'#f44336';
+        respEl.textContent = isOnline && d.responseTime ? `${d.responseTime} ms` : '-- ms';
+        lastEl.textContent = `Last checked: ${new Date(d.lastChecked).toLocaleTimeString()}`;
+    }
+    async function checkAllServices() {
+        for(const svc of SERVICES) await checkService(svc);
+    }
+
+    // ========== FINANCE MODULE ==========
+    async function fetchFinanceData() {
+        const now = Date.now();
+        if (cache.finance && (now - lastFetch.finance) < CACHE_DURATION.finance) {
+            renderFinance(cache.finance);
+            return;
+        }
+        try {
+            const response = await fetch(FINANCE_API_URL, { headers: { 'X-Api-Key': FINANCE_API_KEY } });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const rawData = await response.json();
+            console.log('Finance API response:', rawData);
+            
+            let mapped = { checking:0, savings:0, creditCards:0, cashAvailable:0, netWorth:0, monthlySpending:0, monthlyIncome:0 };
+            if (Array.isArray(rawData)) {
+                for (const acc of rawData) {
+                    const type = (acc.type || acc.account_type || '').toLowerCase();
+                    const balance = parseFloat(acc.balance || acc.current_balance || 0);
+                    if (type.includes('checking')) mapped.checking += balance;
+                    else if (type.includes('savings')) mapped.savings += balance;
+                    else if (type.includes('credit')) mapped.creditCards += Math.abs(balance);
+                    else if (type.includes('cash')) mapped.cashAvailable += balance;
+                }
+                mapped.netWorth = (mapped.checking + mapped.savings + mapped.cashAvailable) - mapped.creditCards;
+            } else if (typeof rawData === 'object') {
+                mapped.checking = rawData.checking || rawData.checking_balance || 0;
+                mapped.savings = rawData.savings || rawData.savings_balance || 0;
+                mapped.creditCards = rawData.credit_cards || rawData.creditCards || 0;
+                mapped.cashAvailable = rawData.cash_available || rawData.cash || 0;
+                mapped.netWorth = rawData.net_worth || rawData.netWorth || 0;
+                mapped.monthlySpending = rawData.monthly_spending || rawData.spending || 0;
+                mapped.monthlyIncome = rawData.monthly_income || rawData.income || 0;
+            }
+            cache.finance = mapped;
+            lastFetch.finance = now;
+            renderFinance(mapped);
+        } catch (error) {
+            console.error('Finance fetch error:', error);
+            if (!cache.finance) renderFinanceDemo();
+            else renderFinance(cache.finance);
+        }
+    }
+    function renderFinanceDemo() {
+        const demo = { checking:5240.50, savings:15780.25, creditCards:2340.75, cashAvailable:3240.00, netWorth:18680.00, monthlySpending:3450.00, monthlyIncome:5200.00 };
+        renderFinance(demo);
+        const note = document.createElement('div');
+        note.style.gridColumn='1/-1'; note.style.textAlign='center'; note.style.fontSize='11px'; note.style.color='#5f6779'; note.style.padding='8px';
+        note.textContent = '⚠️ Using demo data — finance API unreachable. Check CORS or network.';
+        const grid = document.getElementById('financeGrid');
+        if(!grid.querySelector('.config-note')) { note.className='config-note'; grid.appendChild(note); }
+    }
+    function renderFinance(data) {
+        const fmt = (n) => `$${Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+        document.getElementById('checkingBalance').textContent = fmt(data.checking);
+        document.getElementById('savingsBalance').textContent = fmt(data.savings);
+        document.getElementById('creditCards').textContent = fmt(Math.abs(data.creditCards));
+        document.getElementById('cashAvailable').textContent = fmt(data.cashAvailable);
+        document.getElementById('netWorth').textContent = fmt(data.netWorth);
+        document.getElementById('monthlySpending').textContent = fmt(data.monthlySpending);
+        document.getElementById('monthlyIncome').textContent = fmt(data.monthlyIncome);
+        if(data.creditCards < 0) document.getElementById('creditCards').style.color = '#f44336';
+    }
+
+    // ========== OFFLINE & AUTO-REFRESH ==========
+    function updateOnlineStatus() {
+        isOnline = navigator.onLine;
+        document.getElementById('offlineIndicator').style.display = isOnline ? 'none' : 'block';
+        if(isOnline) refreshAllData();
+    }
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+
+    async function refreshAllData() {
+        await Promise.all([fetchWeather(), fetchAQI(), fetchExchangeRate(), checkAllServices(), fetchFinanceData()]);
+    }
+    refreshAllData();
+    setInterval(fetchWeather, CACHE_DURATION.weather);
+    setInterval(fetchAQI, CACHE_DURATION.weather);
+    setInterval(fetchExchangeRate, CACHE_DURATION.exchange);
+    setInterval(checkAllServices, CACHE_DURATION.services);
+    setInterval(fetchFinanceData, CACHE_DURATION.finance);
+    updateOnlineStatus();
+</script>
+</body>
+</html>
