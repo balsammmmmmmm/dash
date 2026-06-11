@@ -898,6 +898,8 @@
     }
 
     // ========== GOOGLE TODOS MODULE ==========
+    let tokenClient;
+    
     function initGoogleAPI() {
         if (GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID_HERE') {
             displayGoogleTodos();
@@ -910,47 +912,32 @@
             return;
         }
         
-        // Initialize Google Sign-In
-        google.accounts.id.initialize({
+        // Create token client for access token flow
+        tokenClient = google.accounts.oauth2.initTokenClient({
             client_id: GOOGLE_CLIENT_ID,
-            callback: handleGoogleCallback,
-            auto_select: false
+            scope: 'https://www.googleapis.com/auth/tasks',
+            callback: handleTokenResponse
         });
         
-        // Request access token
-        requestAccessToken();
+        displayGoogleTodos();
     }
 
-    function handleGoogleCallback(response) {
-        console.log('ID token received');
-        requestAccessToken();
+    function handleTokenResponse(response) {
+        if (response.access_token) {
+            googleAuthToken = response.access_token;
+            console.log('Access token obtained');
+            fetchGoogleTasks();
+        }
     }
 
     function requestAccessToken() {
-        if (typeof google === 'undefined') {
+        if (!tokenClient) {
             setTimeout(requestAccessToken, 100);
             return;
         }
         
-        try {
-            const client = google.accounts.oauth2.initCodeClient({
-                client_id: GOOGLE_CLIENT_ID,
-                scope: 'https://www.googleapis.com/auth/tasks',
-                ux_mode: 'popup',
-                callback: (response) => {
-                    if (response.access_token) {
-                        googleAuthToken = response.access_token;
-                        fetchGoogleTasks();
-                    }
-                }
-            });
-            
-            // Attempt to get token
-            client.requestCode();
-        } catch (err) {
-            console.log('Sign-in required');
-            displayGoogleTodos();
-        }
+        // Request token (will show consent popup if needed)
+        tokenClient.requestAccessToken();
     }
 
     async function fetchGoogleTasks() {
@@ -995,14 +982,9 @@
         if (!googleAuthToken) {
             todosList.innerHTML = `<div class="todo-placeholder">
                 <strong>Google Tasks</strong><br><br>
-                <button id="googleSignInBtn" style="background:#4f8cff;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;margin-top:10px;">Sign In with Google</button>
+                <button id="googleSignInBtn" onclick="requestAccessToken()" style="background:#4f8cff;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;margin-top:10px;font-weight:500;">Sign In with Google</button>
                 <p style="font-size:11px;margin-top:12px;color:#5f6779;">Click to authorize access to your Google Tasks</p>
             </div>`;
-            
-            const btn = document.getElementById('googleSignInBtn');
-            if (btn) {
-                btn.onclick = requestAccessToken;
-            }
             return;
         }
         
