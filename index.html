@@ -5,19 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Personal Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-    <style>
+        <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             background: #0f1115;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             color: #e8eaed;
-            padding: 24px;
-            height: 100vh;
+            padding: 16px;
+            height: 100%;
             overflow: hidden;
         }
 
@@ -27,13 +32,15 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 16px;
+            overflow: hidden;
         }
 
         .top-section {
             background: #0f1115;
-            padding-bottom: 24px;
+            padding-bottom: 12px;
             border-bottom: 1px solid #262b36;
+            flex-shrink: 0;
         }
 
         .clock-container {
@@ -41,15 +48,15 @@
         }
 
         .clock-time {
-            font-size: 72px;
+            font-size: 56px;
             font-weight: 600;
             letter-spacing: -1px;
             line-height: 1.1;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .clock-date {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 400;
             color: #8e95a5;
         }
@@ -57,29 +64,39 @@
         .main-grid {
             display: grid;
             grid-template-columns: 1fr 1.2fr 1fr;
-            gap: 24px;
-            flex: 1;
+            gap: 16px;
+            flex: 2;
             min-height: 0;
+            overflow: hidden;
         }
 
-        .card {
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .card, .bottom-card {
             background: #171a21;
             border: 1px solid #262b36;
             border-radius: 12px;
-            padding: 20px;
-            height: 100%;
+            padding: 16px;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            height: 100%;
         }
 
         .card-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: #5f6779;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         .weather-location {
@@ -327,30 +344,6 @@
             margin-top: 8px;
         }
 
-        .bottom-section {
-            background: #171a21;
-            border: 1px solid #262b36;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: auto;
-        }
-
-.bottom-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        .bottom-card {
-            background: #171a21;
-            border: 1px solid #262b36;
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
         .holiday-item {
             display: flex;
             justify-content: space-between;
@@ -429,13 +422,20 @@
         }
 
         @media (max-width: 1024px) {
-            body { padding: 16px; }
-            .bottom-grid { grid-template-columns: 1fr; }
+            body { padding: 12px; }
+            .dashboard { gap: 12px; }
+            .main-grid { gap: 12px; }
+            .bottom-grid { gap: 12px; }
+            .clock-time { font-size: 48px; }
+            .weather-temp, .rate-value { font-size: 36px; }
+            .card, .bottom-card { padding: 12px; }
         }
 
         @media (max-width: 768px) {
-            .main-grid { grid-template-columns: 1fr; gap: 16px; overflow-y: auto; }
-            .bottom-grid { grid-template-columns: 1fr; }
+            .main-grid { grid-template-columns: 1fr; gap: 12px; overflow-y: auto; flex: none; }
+            .bottom-grid { grid-template-columns: 1fr; flex: none; }
+            .dashboard { overflow-y: auto; }
+            body { overflow-y: auto; }
         }
 
         ::-webkit-scrollbar { width: 6px; }
