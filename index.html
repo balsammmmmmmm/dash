@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- iOS Full Screen Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Personal Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
         <style>
@@ -21,7 +24,11 @@
             background: #0f1115;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             color: #e8eaed;
-            padding: 16px;
+            /* Updated padding to respect iOS safe areas (notch/home indicator) */
+            padding-top: calc(16px + env(safe-area-inset-top));
+            padding-bottom: calc(16px + env(safe-area-inset-bottom));
+            padding-left: calc(16px + env(safe-area-inset-left));
+            padding-right: calc(16px + env(safe-area-inset-right));
             height: 100%;
             overflow: hidden;
         }
@@ -423,7 +430,6 @@
         }
 
         @media (max-width: 1024px) {
-            body { padding: 12px; }
             .dashboard { gap: 12px; }
             .main-grid { gap: 12px; }
             .bottom-grid { gap: 12px; }
@@ -583,8 +589,7 @@
         { name: 'up', url: 'https://up.aunas.qzz.io/', displayName: 'Uptime Monitor' }
     ];
 
-    // ========== GOOGLE TASKS API CONFIGURATION ==========
-    // Get your Google API Client ID from: https://console.cloud.google.com
+    // ========== GOOGLE TASKS API CONFIGURATION ========== 
     const GOOGLE_CLIENT_ID = '465596786526-lf1com6r3jv49ub7ugu6snusmc32l225.apps.googleusercontent.com';
     const GOOGLE_API_KEY = 'YOUR_GOOGLE_API_KEY_HERE';
     let googleAuthToken = null;
@@ -787,7 +792,7 @@
             const change = ((rate - prevRate) / prevRate) * 100;
             const el = document.getElementById('exchangeChange');
             el.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
-            el.className = `rate-change ${change >= 0 ? 'positive' : 'negative'}`;
+            el.className = `rate-change ${change >= 0 ? 'positive' : 'negative'}`; // Fixed: use 'change >= 0'
         } else {
             document.getElementById('exchangeChange').textContent = '--%';
         }
