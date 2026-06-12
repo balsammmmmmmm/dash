@@ -342,6 +342,26 @@
             font-size: 11px;
             color: #5f6779;
             margin-top: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #262b36;
+        }
+
+        .pm-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 12px;
+        }
+
+        .pm-label {
+            color: #5f6779;
+        }
+
+        .pm-value {
+            font-weight: 500;
+            color: #e8eaed;
         }
 
         .holiday-item {
@@ -566,6 +586,14 @@
                     </div>
                     <div class="aqi-bar"><div class="aqi-bar-fill" id="aqiBar" style="width:0%"></div></div>
                     <div class="aqi-detail" id="aqiDetail">Loading AQI...</div>
+                    <div class="pm-row">
+                        <span class="pm-label">PM2.5</span>
+                        <span class="pm-value" id="pm25Value">--</span>
+                    </div>
+                    <div class="pm-row">
+                        <span class="pm-label">PM10</span>
+                        <span class="pm-value" id="pm10Value">--</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -697,10 +725,12 @@
     // ========== AQI (now independent, called separately) ==========
     async function fetchAQI() {
         try {
-            const resp = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${WEATHER_LAT}&longitude=${WEATHER_LON}&current=us_aqi&timezone=auto`);
+            const resp = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${WEATHER_LAT}&longitude=${WEATHER_LON}&current=us_aqi,pm2_5,pm10&timezone=auto`);
             if (!resp.ok) throw new Error();
             const data = await resp.json();
             const aqi = data.current.us_aqi;
+            const pm25 = data.current.pm2_5;
+            const pm10 = data.current.pm10;
             
             let category = 'Good';
             let barColor = '#4caf50';
@@ -737,6 +767,8 @@
             document.getElementById('aqiCategory').textContent = category;
             document.getElementById('aqiValue').textContent = aqi;
             document.getElementById('aqiDetail').textContent = detailText;
+            document.getElementById('pm25Value').textContent = `${pm25.toFixed(1)} µg/m³`;
+            document.getElementById('pm10Value').textContent = `${pm10.toFixed(1)} µg/m³`;
             const barFill = document.getElementById('aqiBar');
             barFill.style.width = percent + '%';
             barFill.style.backgroundColor = barColor;
