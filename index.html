@@ -134,7 +134,6 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-bottom: 24px;
             padding-bottom: 24px;
             border-bottom: 1px solid #262b36;
         }
@@ -227,14 +226,7 @@
             font-weight: 600;
         }
 
-        .chart-container {
-            margin-top: auto;
-        }
 
-        .sparkline {
-            width: 100%;
-            height: 60px;
-        }
 
         .astana-time {
             margin-top: 20px;
@@ -390,12 +382,36 @@
         }
 
         .todo-checkbox {
-            width: 16px;
-            height: 16px;
-            min-width: 16px;
-            margin-top: 2px;
+            width: 18px;
+            height: 18px;
+            min-width: 18px;
+            margin-top: 0px;
             cursor: pointer;
             accent-color: #4f8cff;
+            appearance: none;
+            border: 2px solid #4f8cff;
+            border-radius: 4px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .todo-checkbox:hover {
+            background: rgba(79, 140, 255, 0.1);
+        }
+        
+        .todo-checkbox:checked {
+            background: #4f8cff;
+            border-color: #4f8cff;
+        }
+        
+        .todo-checkbox:checked::after {
+            content: '✓';
+            color: #0f1115;
+            font-size: 12px;
+            font-weight: 600;
         }
 
         .todo-text {
@@ -507,9 +523,7 @@
                         <div class="trend-value" id="trend30d">--%</div>
                     </div>
                 </div>
-                <div class="chart-container">
-                    <svg class="sparkline" id="sparkline" viewBox="0 0 300 60" preserveAspectRatio="none"></svg>
-                </div>
+
                 <div class="astana-time">
                     <span class="astana-label">Astana, Kazakhstan</span>
                     <span class="astana-clock" id="astanaTime">--:--:--</span>
@@ -767,7 +781,6 @@
             if (ratesArray && ratesArray.length > 0) {
                 const rates = ratesArray.map(item => item.rate);
                 cache.exchangeHistory = rates;
-                drawSparkline(rates);
                 
                 const sevenDayRates = rates.slice(-7);
                 if (sevenDayRates.length >= 2) {
@@ -798,22 +811,6 @@
         }
     }
     
-    function drawSparkline(data) {
-        if (!data || data.length === 0) return;
-        const svg = document.getElementById('sparkline');
-        const w = 300, h = 60;
-        const min = Math.min(...data);
-        const max = Math.max(...data);
-        const range = max - min;
-        let path = '';
-        data.forEach((v, i) => {
-            const x = (i / (data.length - 1)) * w;
-            const y = range === 0 ? h/2 : h - ((v - min) / range) * h;
-            path += (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
-        });
-        svg.innerHTML = `<path d="${path}" fill="none" stroke="#4f8cff" stroke-width="1.5" />`;
-    }
-
     // ========== SERVICES MONITOR ==========
     async function checkService(service) {
         const start = performance.now();
