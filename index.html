@@ -88,6 +88,7 @@
             flex-direction: column;
             overflow-y: auto;
             height: 100%;
+            min-height: 0;
         }
 
         .card-title {
@@ -431,11 +432,16 @@
             .card, .bottom-card { padding: 12px; }
         }
 
-        @media (max-width: 768px) {
-            .main-grid { grid-template-columns: 1fr; gap: 12px; overflow-y: auto; flex: none; }
+        @media (max-width: 1024px) {
+            .main-grid { grid-template-columns: 1fr; gap: 12px; overflow: visible; flex: none; }
             .bottom-grid { grid-template-columns: 1fr; flex: none; }
             .dashboard { overflow-y: auto; }
             body { overflow-y: auto; }
+        }
+
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; gap: 12px; }
+            .bottom-grid { grid-template-columns: 1fr; }
         }
 
         ::-webkit-scrollbar { width: 6px; }
@@ -835,47 +841,62 @@
     }
 
     // ========== USA HOLIDAYS ==========
-    const US_HOLIDAYS_2024_2026 = [
-        { name: 'New Year\'s Day', date: '2024-01-01' },
-        { name: 'MLK Jr. Day', date: '2024-01-15' },
-        { name: 'Presidents\' Day', date: '2024-02-19' },
-        { name: 'Memorial Day', date: '2024-05-27' },
-        { name: 'Juneteenth', date: '2024-06-19' },
-        { name: 'Independence Day', date: '2024-07-04' },
-        { name: 'Labor Day', date: '2024-09-02' },
-        { name: 'Columbus Day', date: '2024-10-14' },
-        { name: 'Veterans Day', date: '2024-11-11' },
-        { name: 'Thanksgiving', date: '2024-11-28' },
-        { name: 'Christmas Day', date: '2024-12-25' },
-        { name: 'New Year\'s Day', date: '2025-01-01' },
-        { name: 'MLK Jr. Day', date: '2025-01-20' },
-        { name: 'Presidents\' Day', date: '2025-02-17' },
-        { name: 'Memorial Day', date: '2025-05-26' },
-        { name: 'Juneteenth', date: '2025-06-19' },
-        { name: 'Independence Day', date: '2025-07-04' },
-        { name: 'Labor Day', date: '2025-09-01' },
-        { name: 'Columbus Day', date: '2025-10-13' },
-        { name: 'Veterans Day', date: '2025-11-11' },
-        { name: 'Thanksgiving', date: '2025-11-27' },
-        { name: 'Christmas Day', date: '2025-12-25' },
-        { name: 'New Year\'s Day', date: '2026-01-01' },
-        { name: 'MLK Jr. Day', date: '2026-01-19' },
-        { name: 'Presidents\' Day', date: '2026-02-16' },
-        { name: 'Memorial Day', date: '2026-05-25' },
-        { name: 'Juneteenth', date: '2026-06-19' },
-        { name: 'Independence Day', date: '2026-07-04' },
-        { name: 'Labor Day', date: '2026-09-07' },
-        { name: 'Columbus Day', date: '2026-10-12' },
-        { name: 'Veterans Day', date: '2026-11-11' },
-        { name: 'Thanksgiving', date: '2026-11-26' },
-        { name: 'Christmas Day', date: '2026-12-25' }
+    const US_HOLIDAYS_TEMPLATE = [
+        { name: 'New Year\'s Day', month: 1, day: 1 },
+        { name: 'MLK Jr. Day', month: 1, weekday: 1, week: 3 },
+        { name: 'Presidents\' Day', month: 2, weekday: 1, week: 3 },
+        { name: 'Memorial Day', month: 5, weekday: 1, week: -1 },
+        { name: 'Juneteenth', month: 6, day: 19 },
+        { name: 'Independence Day', month: 7, day: 4 },
+        { name: 'Labor Day', month: 9, weekday: 1, week: 1 },
+        { name: 'Columbus Day', month: 10, weekday: 1, week: 2 },
+        { name: 'Veterans Day', month: 11, day: 11 },
+        { name: 'Thanksgiving', month: 11, weekday: 4, week: 4 },
+        { name: 'Christmas Day', month: 12, day: 25 }
     ];
+
+    function getHolidayDate(year, rule) {
+        if (rule.day) {
+            return new Date(Date.UTC(year, rule.month - 1, rule.day));
+        }
+
+        const firstOfMonth = new Date(Date.UTC(year, rule.month - 1, 1));
+        const firstWeekday = firstOfMonth.getUTCDay();
+        const targetWeekday = rule.weekday;
+        let day;
+
+        if (rule.week > 0) {
+            const offset = (targetWeekday - firstWeekday + 7) % 7;
+            day = 1 + offset + (rule.week - 1) * 7;
+        } else {
+            const lastOfMonth = new Date(Date.UTC(year, rule.month, 0));
+            const lastWeekday = lastOfMonth.getUTCDay();
+            const offset = (lastWeekday - targetWeekday + 7) % 7;
+            day = lastOfMonth.getUTCDate() - offset;
+        }
+
+        return new Date(Date.UTC(year, rule.month - 1, day));
+    }
+
+    function generateUSHolidayDates(startYear, endYear) {
+        const holidays = [];
+        for (let year = startYear; year <= endYear; year += 1) {
+            for (const rule of US_HOLIDAYS_TEMPLATE) {
+                holidays.push({
+                    name: rule.name,
+                    date: getHolidayDate(year, rule).toISOString().slice(0, 10)
+                });
+            }
+        }
+        return holidays;
+    }
 
     function displayUpcomingHolidays() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
-        const upcoming = US_HOLIDAYS_2024_2026
+        const currentYear = today.getUTCFullYear();
+        const holidayData = generateUSHolidayDates(currentYear, currentYear + 2);
+        const upcoming = holidayData
             .filter(h => new Date(h.date) >= today)
             .sort((a, b) => new Date(a.date) - new Date(b.date))
             .slice(0, 8);
@@ -912,19 +933,23 @@
             return;
         }
         
-        // Create token clint for access token flow
+        // Create token client for access token flow
         tokenClient = google.accounts.oauth2.initTokenClient({
             client_id: GOOGLE_CLIENT_ID,
             scope: 'https://www.googleapis.com/auth/tasks',
             callback: handleTokenResponse
         });
         
-        displayGoogleTodos();
+        if (googleAuthToken) {
+            fetchGoogleTasks();
+        } else {
+            displayGoogleTodos();
+        }
     }
 
     function handleTokenResponse(response) {
         if (response.access_token) {
-            googleAuthToken = response.access_token;
+            storeGoogleToken(response.access_token);
             console.log('Access token obtained');
             fetchGoogleTasks();
         }
@@ -940,7 +965,20 @@
         tokenClient.requestAccessToken();
     }
 
+    function storeGoogleToken(token) {
+        googleAuthToken = token;
+        localStorage.setItem('googleTasksToken', token);
+    }
+
+    function loadGoogleToken() {
+        const saved = localStorage.getItem('googleTasksToken');
+        if (saved) {
+            googleAuthToken = saved;
+        }
+    }
+
     async function fetchGoogleTasks() {
+        loadGoogleToken();
         if (!googleAuthToken) {
             displayGoogleTodos();
             return;
@@ -1012,7 +1050,10 @@
     }
 
     async function toggleGoogleTask(checkbox) {
-        if (!googleAuthToken) return;
+        if (!googleAuthToken) {
+            requestAccessToken();
+            return;
+        }
         
         const taskId = checkbox.dataset.taskId;
         const listId = checkbox.dataset.listId;
@@ -1069,6 +1110,7 @@
     }
     
     // Initialize on page load
+    loadGoogleToken();
     initGoogleAPI();
     refreshAllData();
     setInterval(fetchWeather, CACHE_DURATION.weather);
